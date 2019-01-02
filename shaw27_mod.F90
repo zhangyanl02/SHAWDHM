@@ -7971,6 +7971,10 @@ end subroutine leaft2
             + WFAIR*VAC + WFSI*VSILT + WFCL*VCLAY + WFOM*VOM)
 !
           TK(I) = TK0 + (TKLMT-TK0)*VLC(I)/VLMT
+          if(TK(I).le.0.0) then
+            print*,"TK of soil is less or equal 0.0",TK(I),TK0,TKLMT,VLC(I),VLMT
+            TK(I)=TK0
+          end if
         ENDIF
    10 CONTINUE
       RETURN

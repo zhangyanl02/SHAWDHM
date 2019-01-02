@@ -19,7 +19,8 @@ contains
     hrnoon,clouds,declin,hafday,sunhor,tmpday,winday,humday,presur,shadow,skyview,precip,snoden,soitmp,vlcday,soilxt,inbasin,&
     thflux,vflux,runoff,tsavg,evap1,etsum,totflo,lwcan,swcan,lwsnow,lwsoil,lwres,swres,swsnow,swsoil,wwdt,maskflag,&
     maskgrid,bot,dgl,infiltration,AbsorbedSW,AbsorbedLW,snowmelt,InDirect,InDiffuse)
-    use controlpara_mod,only:DT2d,LVLOUT,CANMA,CANMB,HEIGHT,WT2d,WDT2d,DTIME,INITAL,NHRPDT,SNOTMP,WCMAX,TOLER,MAXSTEP,shadeef
+    use controlpara_mod,only:DT2d,LVLOUT,CANMA,CANMB,HEIGHT,WT2d,WDT2d,DTIME,INITAL,NHRPDT,SNOTMP,WCMAX,TOLER,MAXSTEP,shadeef,&
+        maxiter
     use constvar_mod,only:G,UGAS,LF,RHOL,RHOI
     use soilproperty_mod,only:B2d,SAT2d,RHOB2d,ENTRY2d,SAND2d,SILT2d,CLAY2d,OM2d,SATK2d,SALTKQ2d,thfc2d
     use matrix_mod
@@ -506,37 +507,8 @@ contains
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-    IF(col.eq.1 .and. row.eq.1) then
-    IF(INITAL.EQ.0)THEN
-    write(22,*) "INPH2O:",INPH2O
-    write(22,*) "LVLOUT:",LVLOUT(1:13)
-    write(22,*) "MWATRXT:",MWATRXT
-    write(22,*) "JSTART,HRSTAR,YRSTAR,JEND,YREND:",JULIAN,HOUR,YEAR
-    write(22,*) "ALATUD,SLOPE,ASPECT,ELEVATION,HRNOON:",ALATUD*180./3.14159,TAN(SLOPE)*100.0,&
-            ASPECT*180./3.14159,HRNOON
-    write(22,*) "NPLANT,NSP,NR,NS,NSALT,TOLER,NHRPDT,WDT:",NPLANT,NSP,NR,NS,NSALT,TOLER,NHRPDT,WDT
-    write(22,*) "ZMCM,HEIGHT,PONDCM,ZHCM:",0.6000000,HEIGHT,POND*100,0.12000000
-    write(22,*) "MPLTGRO,MZCINP,CANMA,CANMB,WCANDT:",0,MZCINP,CANMA,CANMB,WCANDT(1)
-    write(22,*) "ITYPE,XANGLE,CANALB,TCCRIT,RSTOM0:",ITYPE(1),XANGLE(1),CANALB(1),TCCRIT(1),RSTOM0(1)
-    write(22,*) "RSTEXP,PLEAF0,RLEAF0,RROOT0,CLUMPNG:",RSTEXP(1),PLEAF0(1),RLEAF0(1),RROOT0(1),CLUMPNG(1)
-    write(22,*) "PLTHGT,DCHAR,PLTWGT,PLTLAI,ROOTDP,DCHAR:",PLTHGT(1),DCHAR(1),PLTWGT(1),PLTLAI(1),ROOTDP(1),DCHAR(1)
-    write(22,*) "SNOTMP,ZMSPCM,ZHSPCM:",SNOTMP,ZMSP*100,ZHSP*100.0
-    write(22,*) "COVER,ALBRES,RLOAD,ZRTHIK,GMCDT,RESCOF:",COVER,ALBRES,RLOAD,ZRTHIK,GMCDT(1),RESCOF
-    write(22,*) "TSAVG:",TSAVG
-    write(22,*)"initial TSDT:", TSDT(1:12)
-    write(22,*)"initial VLCDT:", VLCDT(1:12)
-    write(22,*)"IVLCBC,ITMPBC,ALBDRY,ALBEXP:", ALBDRY,ALBEXP
-    DO I=1,NS
-            WRITE (22,158)ZS(I),B(I),ENTRY(I),SATK(I)*360000,RHOB(I),SAND(I)*100.,SILT(I)*100.,CLAY(I)*100.,OM(I)*100.,SAT(I)
-    ENDDO
-
-    write(22,*) "VLCDAY,SOITMP:",VLCDAY,SOITMP
-    ENDIF
-    write(22,159) JULIAN,HOUR,YEAR,TMPDAY,WINDAY,HUMDAY*100.0,SUNHOR,CLOUDS
-    end if
 
 
-!
 !**** START ITERATIVE PROCEDURE TO SOLVE ENERGY AND MOISTURE BALANCE
 !
   120 ITER = 0
@@ -1214,7 +1186,7 @@ contains
   350 IF (IWFLAG .GT. 0 .OR. IEFLAG .GT. 0) THEN
 !        CONVERGENCE HAS NOT BEEN MET - IF ITERATIONS ARE UNDER 10, GO
 !        BACK AND START NEXT ITERATION
-         IF (ITER .LE. 5) GO TO 200
+         IF (ITER .LE. maxiter) GO TO 200
 !
 !        HAVING PROBLEMS REACHING CONVERGENCE WITH CURRENT TIME STEP
          IF (NDT .LT. MAXNDT) THEN

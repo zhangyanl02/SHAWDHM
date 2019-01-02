@@ -28,6 +28,7 @@ module controlpara_mod
     integer(i4)::maxstep
     integer(i4)::hydro_module
     integer(i4)::timezone
+    integer(i4)::maxiter
 
 
   !inital: intial time

@@ -64,7 +64,7 @@ contains
         namelist /timepara/ mtstep,nhrpdt,jstart,hrstar,yrstar,jend,hrend,yrend,hrnoon,timezone
 !       namelist control
         namelist /control/ toler,height,pondmxcm,inph2o,mwatrxt,mpltgro,mzcinp,canma,canmb,wcandt1,zmspcm,&
-          snotmp,ivlcbc,itmpbc,albdry,albexp,zmcm,restart,shadeef,nsalt,nplant,maskflag,maxstep,hydro_module,deflate
+          snotmp,ivlcbc,itmpbc,albdry,albexp,zmcm,restart,shadeef,nsalt,nplant,maskflag,maxstep,hydro_module,deflate,maxiter
           
 !       namelist layers
         namelist /layers/ns,nc,nr,nsp,nsoiltype,soilfromtable,lai_from_table
@@ -1238,7 +1238,8 @@ end subroutine cloudy2
         integer(i4),dimension(:,:,:),allocatable::icedt
         integer(i4)::allocatestatus
         integer(i4)::r,c,countn,col,row,i,j,l1,l2
-        integer::tsdt_id,vlcdt_id,vicdt_id,icedt_id,matdt_id,ncid
+        integer::tsdt_id,vlcdt_id,vicdt_id,icedt_id,matdt_id,ncid,m
+        real::tsmean
         
         
         print*,"reading intial state variables"
@@ -1267,9 +1268,38 @@ end subroutine cloudy2
           tsdt2d(:,:,1:ns)=tsdt
           vlcdt2d(:,:,1:ns)=vlcdt
           vicdt2d(:,:,1:ns)=vicdt
-          do col=1,nx
-            do row=1,ny
-              do i=1,ns2d(col,row)
+          do col=2,nx-1
+            do row=2,ny-1
+              if(inbasin2d(col,row)==1) then
+              do i=1,ns2d(col,row)                
+                tsmean=0.0
+                m=0
+                if(inbasin2d(col-1,row)==1) then
+                  tsmean=tsmean+tsdt2d(col-1,row,i)
+                  m=m+1
+                end if
+
+                if(inbasin2d(col+1,row)==1) then
+                  tsmean=tsmean+tsdt2d(col+1,row,i)
+                  m=m+1
+                end if
+
+                if(inbasin2d(col,row-1)==1) then
+                  tsmean=tsmean+tsdt2d(col,row-1,i)
+                  m=m+1
+                end if
+
+                if(inbasin2d(col,row+1)==1) then
+                  tsmean=tsmean+tsdt2d(col,row+1,i)
+                  m=m+1
+                end if
+
+                if(m>0) then
+                tsmean=tsmean/m
+                  if(abs(tsdt2d(col,row,i)-tsmean)>8.0) then
+                    tsdt2d(col,row,i)=tsmean
+                  end if
+                end if
                 if (vlcdt2d(col,row,i) .gt. sat2d(col,row,i)) vlcdt2d(col,row,i)=sat2d(col,row,i)
                 call matvl1 (i,matdt2d(col,row,i),vlcdt2d(col,row,i),col,row)
                 if(vicdt2d(col,row,i).gt. 0.0) then
@@ -1278,6 +1308,7 @@ end subroutine cloudy2
                    icesdt2d(:,:,:)=0
                 end if
               enddo
+              end if
             end do
           end do
           !tsdt2d(35,34,:)=tsdt2d(35,34,:)+4.0  !!AR

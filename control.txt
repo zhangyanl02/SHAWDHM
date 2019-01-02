@@ -45,6 +45,7 @@
       maxstep=1
       hydro_module=0
       deflate=1
+      maxiter=10
 /
 
 &layers

@@ -45,13 +45,6 @@ program testprogram
 
     integer(i4)::jd_local,hour_local,year_local
     
-    !real(r8),dimension(NX,NY,NSMAX,24)::TSDT2d_day,VLCDT2d_day,VICDT2d_day
-    !real(r8),dimension(NX,NY,NRMAX,24)::TRDT2d_day
-    !real(r8),dimension(NX,NY,NSPMAX,24)::TSPDT2d_day,zsp2d_day
-    !real(r8),dimension(NX,NY,24)::EVAP12d_day,ETSUM2d_day,THFLUX2d_day
-    !integer(i4),dimension(NX,NY,24)::NSP2d_day
-    !real(r8),dimension(NX,NY,24)::RUNOFF2d_day,DGL2D_day,RUNOFFDIS_day
-
     real(r8),allocatable::TSDT2d_day(:,:,:,:),VLCDT2d_day(:,:,:,:),VICDT2d_day(:,:,:,:)
     real(r8),allocatable::TRDT2d_day(:,:,:,:)
     real(r8),allocatable::TSPDT2d_day(:,:,:,:),zsp2d_day(:,:,:,:)
@@ -159,13 +152,8 @@ program testprogram
     enddo
 !
 
-    if (year>2014)then
-       year1=2014
-       lastyear=2014
-    else
-       year1=year
-    end if
-    call dayinp2 (julian,year1,lastyear,mtstep,mpltgro,mwatrxt,sunhor2d,tmpday2d,winday2d,humday2d,&
+
+    call dayinp2 (julian,year,lastyear,mtstep,mpltgro,mwatrxt,sunhor2d,tmpday2d,winday2d,humday2d,&
     precip2d,snoden2d,soilxt2d,nplant,plthgt2d,dchar2d,pltwgt2d,pltlai2d,rootdp2d,presur2d,shadow2d)
 
     do col=1,nx
@@ -197,13 +185,7 @@ program testprogram
 !need change----->adding hrend 
         if (year .eq. yrend  .and.  julian .gt. jend)   goto 504
         if (year .gt. yrend) goto 504
-    if (year>2014)then
-       year1=2014
-       lastyear=2014
-    else
-       year1=year
-    end if
-      call dayinp2 (julian,year1,lastyear,mtstep,mpltgro,mwatrxt,sunhor2d,tmpday2d,winday2d,humday2d,&
+      call dayinp2 (julian,year,lastyear,mtstep,mpltgro,mwatrxt,sunhor2d,tmpday2d,winday2d,humday2d,&
       precip2d,snoden2d,soilxt2d,nplant,plthgt2d,dchar2d,pltwgt2d,pltlai2d,rootdp2d,presur2d,shadow2d)
       do col=1,nx
         do row=1,ny
@@ -212,21 +194,7 @@ program testprogram
       end do
     end if
 
-      nsp1=1
-      if(inital.eq.0)then
-        do i =19,19
-          do j=24,24
-            nsp2d(i,j)=nsp1
-            do k =1, nsp1
-             zsp2d(i,j,k)=k*0.03       
-             dzsp2d(i,j,k)=0.03
-             rhosp2d(i,j,k)=116.0
-             tspdt2d(i,j,k)=-9.0 
-             icespt2d(i,j,k)=0
-            end do
-          end do
-        end do
-      end if 
+
     totflowbot=0.0
     totflowtop=0.0
     swe=0.0
