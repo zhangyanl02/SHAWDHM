@@ -307,12 +307,10 @@ program testprogram
               end if
               dgl2d(col,row) = ds2d(col,row)+dg2d(col,row)
           end if
-            runoff_g(col,row) =runoff_g(col,row)+0.001939/6068* dtime / slopelen2d(col,row)
 !           caculate subsurface rounoff
           runoff_inter(col,row)=0.0
           tmpqsub= 0.0
-          tempcoe= 7.0
-
+          tempcoe= 1.0
           call soilhk (ns2d(col,row),hkdt2d(col,row,:),matdt2d(col,row,:),vlcdt2d(col,row,:),vicdt2d(col,row,:),col,row)
           deltzi=(zs2d(col,row,2)-zs2d(col,row,1))/2.0
             if (tsdt2d(col,row,1)<0.0) then
@@ -321,11 +319,6 @@ program testprogram
                   fieldc=thfc2d(col,row,1)
             end if
           if((vlcdt2d(col,row,1)-fieldc) .gt. 0.0) then
-            if(tsdt2d(col,row,1)<0.0) then
-              tempcoe=7.0
-            else
-              tempcoe=7.0
-            end if
             tmpqsub = tempcoe*hkdt2d(col,row,1)*sin(slope2d(col,row))*dtime*deltzi
             if(tmpqsub .lt. 0.1e-20) tmpqsub = 0.0
             tmp= (vlcdt2d(col,row,1)-fieldc)*deltzi*slopelen2d(col,row)
@@ -335,15 +328,13 @@ program testprogram
             runoff_inter(col,row) = runoff_inter(col,row) + tmpqsub
             runoffdepth(col,row)=runoffdepth(col,row)+tmpqsub*zs2d(col,row,1)
           end if
-            do i = 2, ns2d(col,row)-1
+          do i = 2, ns2d(col,row)-1
             tmpqsub=0.0
             deltzi=(zs2d(col,row,i+1)-zs2d(col,row,i-1))/2.0
             if (tsdt2d(col,row,i)<0.0) then
                   fieldc=thfc2d(col,row,i)*vlcdt2d(col,row,1)/(vlcdt2d(col,row,1)+vicdt2d(col,row,1))
-                  tempcoe=7.0
             else
                   fieldc=thfc2d(col,row,i)
-                  tempcoe=7.0
             end if
             if((vlcdt2d(col,row,i)-fieldc) .gt. 0.0) then
               call soilhk (ns2d(col,row),hkdt2d(col,row,:),matdt2d(col,row,:),vlcdt2d(col,row,:),vicdt2d(col,row,:),col,row)
