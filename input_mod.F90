@@ -49,6 +49,7 @@ module input_mod
 contains
 
       subroutine input(setupfile)
+        use dims_mod,only:DDX
         use shr_kind_mod, only: r8 => shr_kind_r8,i4 => shr_kind_i4,i8 => shr_kind_i8,r4 => shr_kind_r4
         use controlpara_mod
         use soilproperty_mod,only:b2d,entry2d, satk2d,rhob2d,sat2d,sand2d,silt2d,clay2d,om2d,vapexp2d,vapcof2d,&
@@ -251,6 +252,7 @@ contains
           aspect2d=aspect2d*3.14159/180.
         endif
 
+
         if(hydro_module.eq.1) then
           print*,"reading mapfile ",slopelength_map
           call readmapr(nx,ny,slopelen2d,slopelength_map,ireturn)
@@ -258,6 +260,8 @@ contains
             print *, slopelength_map//" does not exist"
             stop
           endif
+        else
+          slopelen2d(:,:)=DDX
         end if
 
         print*,"reading mapfile ",slopeangle_map
