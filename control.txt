@@ -20,7 +20,7 @@
 /
 
 &control
-      toler   =0.2
+      toler   =0.1
       height  =5.0
       pondmxcm=0.2
       inph2o =0

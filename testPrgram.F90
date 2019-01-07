@@ -308,7 +308,6 @@ program testprogram
               dgl2d(col,row) = ds2d(col,row)+dg2d(col,row)
           end if
             runoff_g(col,row) =runoff_g(col,row)+0.001939/6068* dtime / slopelen2d(col,row)
-                  dgl2d(col,row)=dgl2d(col,row)+4.0*3600/2336/1000000.0/0.3
 !           caculate subsurface rounoff
           runoff_inter(col,row)=0.0
           tmpqsub= 0.0

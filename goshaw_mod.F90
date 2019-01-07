@@ -720,7 +720,7 @@ contains
 
       IF(extempflag.eq.1) then
         extempflag=0
-        DELTA=DELTA/10.0
+        DELTA=DELTA/100.0
       endif
 
 
