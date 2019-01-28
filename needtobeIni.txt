@@ -1,7 +1,0 @@
-    JSTART=356
-    HRSTAR=1
-    YRSTAR=2007
-    JEND=300
-    YREND=2008
-    NSP2d=0
-    NC2d=0
