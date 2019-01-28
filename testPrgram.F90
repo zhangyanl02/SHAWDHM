@@ -63,19 +63,19 @@ program testprogram
 
     !call omp_set_num_threads(32)
     call input(setupfile)
-    allocate(TSDT2d_day(NX,NY,NS,24))
-    allocate(VLCDT2d_day(NX,NY,NS,24))
-    allocate(VICDT2d_day(NX,NY,NS,24))
-    allocate(TRDT2d_day(NX,NY,NRMAX,24))
-    allocate(TSPDT2d_day(NX,NY,NSPMAX,24))
-    allocate(zsp2d_day(NX,NY,NSPMAX,24))
-    allocate(EVAP12d_day(NX,NY,24))
-    allocate(ETSUM2d_day(NX,NY,24))
-    allocate(THFLUX2d_day(NX,NY,24))
-    allocate(NSP2d_day(NX,NY,24))
-    allocate(RUNOFF2d_day(NX,NY,24))
-    allocate(DGL2D_day(NX,NY,24))
-    allocate(RUNOFFDIS_day(NX,NY,24))
+    allocate(TSDT2d_day(NX,NY,NS,24/nhrpdt))
+    allocate(VLCDT2d_day(NX,NY,NS,24/nhrpdt))
+    allocate(VICDT2d_day(NX,NY,NS,24/nhrpdt))
+    allocate(TRDT2d_day(NX,NY,NRMAX,24/nhrpdt))
+    allocate(TSPDT2d_day(NX,NY,NSPMAX,24/nhrpdt))
+    allocate(zsp2d_day(NX,NY,NSPMAX,24/nhrpdt))
+    allocate(EVAP12d_day(NX,NY,24/nhrpdt))
+    allocate(ETSUM2d_day(NX,NY,24/nhrpdt))
+    allocate(THFLUX2d_day(NX,NY,24/nhrpdt))
+    allocate(NSP2d_day(NX,NY,24/nhrpdt))
+    allocate(RUNOFF2d_day(NX,NY,24/nhrpdt))
+    allocate(DGL2D_day(NX,NY,24/nhrpdt))
+    allocate(RUNOFFDIS_day(NX,NY,24/nhrpdt))
 
     call strlen(output_dir,l1,l2)
     if(hydro_module.eq.1) open(180,File=output_dir(l1:l2)//'RIVER_FLOW/runoff.txt',status='replace')
@@ -152,10 +152,10 @@ program testprogram
     enddo
 !
 
-
+    print*,"reading forcing data"
     call dayinp2 (julian,year,lastyear,mtstep,mpltgro,mwatrxt,sunhor2d,tmpday2d,winday2d,humday2d,&
     precip2d,snoden2d,soilxt2d,nplant,plthgt2d,dchar2d,pltwgt2d,pltlai2d,rootdp2d,presur2d,shadow2d)
-
+    print*,"ending reading forcing data"
     do col=1,nx
        do row=1,ny
          call cloudy2 (clouds2d(col,row),alatud2d(col,row),declin(col,row),hafday(col,row),sunhor2d(col,row,:),julian,nhrpdt)
@@ -170,7 +170,7 @@ program testprogram
 !**** start of a new hour - update values assumed constant over the hour
     runoffdis=0.0
   100 dtime=nhrpdt*3600.
-    if (hour.eq.1) print*,year,julian
+    if (hour.eq.3) print*,year,julian
     hour=hour+nhrpdt
     if (hour .gt. 24) then
 !        start a new day
@@ -388,22 +388,25 @@ program testprogram
     !  year,julian,hour,result1_dir,maskgrid,runoff2d,dgl2d,runoffdis,infil2d,snowmelt2d,AbsorbedLW2d,AbsorbedSW2d,&
     !  InDirect2d,InDiffuse2d,deflate)
 
-    trdt2d_day(:,:,:,hour)=trdt2d(:,:,:)
-    tsdt2d_day(:,:,:,hour)=tsdt2d(:,:,1:NS)
-    vlcdt2d_day(:,:,:,hour)=vlcdt2d(:,:,1:NS)
-    vicdt2d_day(:,:,:,hour)=vicdt2d(:,:,1:NS)
-    nsp2d_day(:,:,hour)=nsp2d(:,:)
-    tspdt2d_day(:,:,:,hour)=tspdt2d(:,:,:)
-    zsp2d_day(:,:,:,hour)=zsp2d(:,:,:)
-    evap12d_day(:,:,hour)=evap12d(:,:)
-    etsum2d_day(:,:,hour)=etsum2d(:,:)
-    thflux2d_day(:,:,hour)=thflux2d(:,:)
-    runoff2d_day(:,:,hour)=runoff2d(:,:)
-    dgl2d_day(:,:,hour)=dgl2d(:,:)
-    runoffdis_day(:,:,hour)=runoffdis(:,:)
+    trdt2d_day(:,:,:,int(hour/nhrpdt))=trdt2d(:,:,:)
+    tsdt2d_day(:,:,:,int(hour/nhrpdt))=tsdt2d(:,:,1:NS)
+    vlcdt2d_day(:,:,:,int(hour/nhrpdt))=vlcdt2d(:,:,1:NS)
+    vicdt2d_day(:,:,:,int(hour/nhrpdt))=vicdt2d(:,:,1:NS)
+    nsp2d_day(:,:,int(hour/nhrpdt))=nsp2d(:,:)
+    tspdt2d_day(:,:,:,int(hour/nhrpdt))=tspdt2d(:,:,:)
+    zsp2d_day(:,:,:,int(hour/nhrpdt))=zsp2d(:,:,:)
+    evap12d_day(:,:,int(hour/nhrpdt))=evap12d(:,:)
+    etsum2d_day(:,:,int(hour/nhrpdt))=etsum2d(:,:)
+    thflux2d_day(:,:,int(hour/nhrpdt))=thflux2d(:,:)
+    runoff2d_day(:,:,int(hour/nhrpdt))=runoff2d(:,:)
+    dgl2d_day(:,:,int(hour/nhrpdt))=dgl2d(:,:)
+    runoffdis_day(:,:,int(hour/nhrpdt))=runoffdis(:,:)
     if (hour .eq. 24) then
-    call output2(trdt2d_day,tsdt2d_day,vlcdt2d_day,vicdt2d_day,NR2d,NS,nsp2d_day,tspdt2d_day,zsp2d_day,evap12d_day,etsum2d_day,&
-      thflux2d_day,year,julian,result1_dir,maskgrid,runoff2d_day,dgl2d_day,runoffdis_day,deflate)
+    !call output2(trdt2d_day,tsdt2d_day,vlcdt2d_day,vicdt2d_day,NR2d,NS,nsp2d_day,tspdt2d_day,zsp2d_day,evap12d_day,etsum2d_day,&
+    !  thflux2d_day,year,julian,result1_dir,maskgrid,runoff2d_day,dgl2d_day,runoffdis_day,deflate)
+
+      call output_daily(trdt2d_day,tsdt2d_day,vlcdt2d_day,vicdt2d_day,NR2d,NS,nsp2d_day,tspdt2d_day,zsp2d_day,evap12d_day,&
+        etsum2d_day,thflux2d_day,year,julian,result1_dir,maskgrid,runoff2d_day,dgl2d_day,runoffdis_day,deflate,24/nhrpdt)
     end if
     inital=1
     go to 100
@@ -913,4 +916,202 @@ subroutine output2(trdt2d,TSDT2d,VLCDT2d,VICDT2d,NR2d,NS,NSP2d,TSPDT2d,ZSPDT2d,E
     endif
     call check( nf90_close(ncid) )
  end subroutine
+
+
+
+subroutine output_daily(trdt2d,TSDT2d,VLCDT2d,VICDT2d,NR2d,NS,NSP2d,TSPDT2d,ZSPDT2d,EVAP12d,ETSUM2d,THFLUX2d,&
+      YEAR,JULIAN,output_dir,maskgrid,RUNOFF2d,DGL2D,RUNOFFDIS,deflate,ntime)
+    use dims_mod
+    use input_mod,only:check
+    use shr_kind_mod, only: r8 => shr_kind_r8,i4 => shr_kind_i4,i8 => shr_kind_i8,r4 => shr_kind_r4
+    use netcdf
+    use savedata_mod,only:SWE2d,FDEPTH2d,TDEPTH2d
+    use radout_mod,only:sw_on_soil2d,sw_on_snow2d
+    implicit none
+    ! This is the name of the data file we will create.
+    integer(i4),intent(in)::NS,ntime
+    integer(i4),dimension(NX,NY),intent(in)::NR2d
+    real(r8),dimension(NX,NY,NS,ntime),intent(inout)::TSDT2d,VLCDT2d,VICDT2d
+    real(r8),dimension(NX,NY,NRMAX,ntime),intent(inout)::TRDT2d
+    real(r8),dimension(NX,NY,NSPMAX,ntime),intent(inout)::TSPDT2d,ZSPDT2d
+    real(r8),dimension(NX,NY,ntime),intent(in)::EVAP12d,ETSUM2d,THFLUX2d
+    integer(i4),dimension(NX,NY),intent(in)::NSP2d
+    integer(i4),intent(in)::YEAR,JULIAN,deflate
+    character(80),intent(in)::output_dir
+    real(r8),dimension(NX,NY),intent(in)::maskgrid
+    real(r8),dimension(NX,NY,ntime),intent(in)::RUNOFF2d,DGL2D,RUNOFFDIS
+    character (len=4)::SYEAR
+    character (len=3)::SJULIAN
+
+    integer::I,FLAG,TMP,COL,ROW,NSP
+    integer::ncid,xid,yid,zid
+    integer,dimension(4)::dimids_4d
+    integer,dimension(3)::dimids_3d
+    integer,dimension(2)::dimids_2d
+    real(r8),dimension(NX,NY)::ZSP
+
+    real(r8),dimension(nx,ny,ns)::TSDT2d_daily,VLCDT2d_daily,VICDT2d_daily
+    real(r8),dimension(NX,NY)::EVAP12d_daily,ETSUM2d_daily,THFLUX2d_daily,DGL2D_daily
+
+
+
+
+    integer::TRDT_ID,TSDT_ID,VLCDT_ID,TSPDT_ID,ZSPDT_ID,invalidp_ID,evap_id,etsum_id,THFLUX_ID,&
+             SWE_ID,FDEPTH_ID,TDEPTH_ID,runoff_ID,VICDT_ID,dgl_id,RUNOFFDIS_id,infil2d_ID,snowmelt_ID,absorbedLW_ID,&
+             absorbedSW_ID,InDirect2d_ID,InDiffuse2d_ID,h
+    integer::x_dimid,y_dimid,z_dimid,h_dimid,nsp_dimid
+    character*(80)::ncfilename
+    logical::alive
+    logical::output_snow
+
+
+    WRITE(SYEAR,"(I4.4)") YEAR
+    WRITE(SJULIAN,"(I3.3)") JULIAN
+
+    output_snow=.TRUE.
+      IF(maxval(NSP2d).GT.0) THEN
+        DO COL=1,NX
+          DO ROW=1,NY
+              ZSP(COL,ROW)=ZSPDT2d(COL,ROW,NSP2d(COL,ROW)+1,ntime)
+          END DO
+        END DO
+      ELSE
+        ZSP=-9999
+      END IF
+
+      TSDT2d_daily(:,:,:)=0.0
+      VLCDT2d_daily(:,:,:)=0.0
+      VICDT2d_daily(:,:,:)=0.0
+      EVAP12d_daily(:,:)=0.0
+      ETSUM2d_daily(:,:)=0.0
+      THFLUX2d_daily(:,:)=0.0
+      DGL2D_daily(:,:)=0.0
+      do h =1,ntime
+        TSDT2d_daily(:,:,:)=TSDT2d_daily(:,:,:)+TSDT2d(:,:,:,h)/ntime
+        VLCDT2d_daily(:,:,:)=VLCDT2d_daily(:,:,:)+VLCDT2d(:,:,:,h)/ntime
+        VICDT2d_daily(:,:,:)=VICDT2d_daily(:,:,:)+VICDT2d(:,:,:,h)/ntime
+        EVAP12d_daily(:,:)=EVAP12d_daily(:,:)+EVAP12d(:,:,h)/ntime
+        ETSUM2d_daily(:,:)=ETSUM2d_daily(:,:)+ETSUM2d(:,:,h)/ntime
+        THFLUX2d_daily(:,:)=THFLUX2d_daily(:,:)+THFLUX2d(:,:,h)/ntime
+        DGL2D_daily(:,:)=DGL2D_daily(:,:)+DGL2D(:,:,h)/ntime
+      end do
+
+      ncfilename=trim(output_dir)//trim(SYEAR)//"-"//trim(SJULIAN)//".nc"
+      call check( nf90_create(ncfilename, NF90_NETCDF4, ncid) )
+      !call check( nf90_create(ncfilename, NF90_CLOBBER, ncid) )
+      ! Define the dimensions. NetCDF will hand back an ID for each. 
+      call check( nf90_def_dim(ncid, "NX", NX, x_dimid) )
+      call check( nf90_def_dim(ncid, "NY", NY, y_dimid) )
+      call check( nf90_def_dim(ncid, "NS", NS, z_dimid) )
+      dimids_3d(1) = x_dimid
+      dimids_3d(2) = y_dimid
+      dimids_3d(3) = z_dimid
+
+      dimids_2d(1)=x_dimid
+      dimids_2d(2)=y_dimid
+
+      ! Define the variable.
+      call check( nf90_def_var(ncid, "TSDT2d", NF90_REAL, dimids_3d, TSDT_ID) )
+      if(deflate.eq.1) call check( nf90_def_var_deflate(ncid,TSDT_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "TRDT2d", NF90_REAL, dimids_4d, TRDT_ID) )
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,TRDT_ID,0,4,4))
+      call check( nf90_def_var(ncid, "InvalidPoints", NF90_REAL, dimids_2d, invalidp_ID) )
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,invalidp_ID,0,4,4))
+      call check( nf90_def_var(ncid, "DGL2d", NF90_REAL, dimids_2d, dgl_ID) )
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,dgl_ID,0,4,4))
+      call check( nf90_def_var(ncid, "VLCDT2d" , NF90_REAL, dimids_3d, VLCDT_ID))
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,VLCDT_ID,0,4,4))
+      call check( nf90_def_var(ncid, "VICDT2d" , NF90_REAL, dimids_3d, VICDT_ID))
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,VICDT_ID,0,4,4))
+      call check( nf90_def_var(ncid, "EVAP" , NF90_REAL, dimids_2d, evap_ID))
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,evap_ID,0,4,4))
+      call check( nf90_def_var(ncid, "ET" , NF90_REAL, dimids_2d, etsum_ID))
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,etsum_ID,0,4,4))
+      call check( nf90_def_var(ncid, "THFLUX" , NF90_REAL, dimids_2d, THFLUX_ID))
+      if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,THFLUX_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "SWE" , NF90_REAL, dimids_2d, SWE_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,SWE_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "FDEPTH" , NF90_REAL, dimids_3d, FDEPTH_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,FDEPTH_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "TDEPTH" , NF90_REAL, dimids_3d, TDEPTH_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,TDEPTH_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "surfacerunoff" , NF90_REAL, dimids_3d, runoff_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,runoff_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "RUNOFFDIS" , NF90_REAL, dimids_3d, RUNOFFDIS_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,RUNOFFDIS_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "infil2d" , NF90_REAL, dimids_3d, infil2d_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,infil2d_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "snowmelt" , NF90_REAL, dimids_3d, snowmelt_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,snowmelt_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "absorbedSW" , NF90_REAL, dimids_3d, absorbedSW_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,absorbedSW_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "absorbedLW" , NF90_REAL, dimids_3d, absorbedLW_ID))
+      !if(deflate.eq.1)call check( nf90_def_var_deflate(ncid,absorbedLW_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "InDirect" , NF90_REAL, dimids_3d, InDirect2d_ID))
+      !if(deflate.eq.1) call check( nf90_def_var_deflate(ncid,InDirect2d_ID,0,4,4))
+      !call check( nf90_def_var(ncid, "InDiffuse" , NF90_REAL, dimids_3d, InDiffuse2d_ID))
+      !if(deflate.eq.1) call check( nf90_def_var_deflate(ncid,InDiffuse2d_ID,0,4,4))
+
+      
+      if(output_snow .eqv. .TRUE.)then
+        call check( nf90_def_var(ncid, "ZSP2d", NF90_REAL, dimids_2d, ZSPDT_ID))
+      endif
+      call check( nf90_enddef(ncid) )
+      !call check( nf90_close(ncid) )
+
+!   Store variable values
+    !call check( nf90_open(ncfilename, NF90_WRITE, ncid) )
+    call check( nf90_inq_varid(ncid, "TSDT2d", TSDT_ID) )
+    !call check( nf90_inq_varid(ncid, "TRDT2d", TRDT_ID) )
+    call check( nf90_inq_varid(ncid, "VLCDT2d", VLCDT_ID) )
+    call check( nf90_inq_varid(ncid, "VICDT2d", VICDT_ID) )
+    !call check( nf90_inq_varid(ncid, "RUNOFFDIS", RUNOFFDIS_ID) )
+    !call check( nf90_inq_varid(ncid, "infil2d", infil2d_ID) )
+    !call check( nf90_inq_varid(ncid, "snowmelt", snowmelt_ID) )
+    !call check( nf90_inq_varid(ncid, "absorbedSW", absorbedSW_ID) )
+    !call check( nf90_inq_varid(ncid, "absorbedLW", absorbedLW_ID) )
+    !call check( nf90_inq_varid(ncid, "InDirect", InDirect2d_ID) )
+    !call check( nf90_inq_varid(ncid, "InDiffuse", InDiffuse2d_ID) )
+    
+    call check( nf90_inq_varid(ncid, "InvalidPoints", invalidp_ID) )
+    call check( nf90_inq_varid(ncid, "DGL2d", dgl_ID) )
+
+    call check( nf90_inq_varid(ncid, "EVAP", evap_ID) )
+    call check( nf90_inq_varid(ncid, "ET", etsum_ID) )
+    call check( nf90_inq_varid(ncid, "THFLUX", THFLUX_ID) )
+    !call check( nf90_inq_varid(ncid, "SWE", SWE_ID) )
+    !call check( nf90_inq_varid(ncid, "FDEPTH", FDEPTH_ID) )
+    !call check( nf90_inq_varid(ncid, "TDEPTH", TDEPTH_ID) )
+    !call check( nf90_inq_varid(ncid, "surfacerunoff", runoff_ID) )
+    call check( nf90_put_var(ncid, TSDT_ID, TSDT2d_daily))
+    !call check( nf90_put_var(ncid, TRDT_ID, TRDT2d,start =(/1,1,1,HOUR/),count = (/NX,NY,NR2d(1,1),1/)))
+    call check( nf90_put_var(ncid, VLCDT_ID, VLCDT2d_daily))
+    call check( nf90_put_var(ncid, VICDT_ID, VICDT2d_daily))
+    !call check( nf90_put_var(ncid, RUNOFFDIS_ID, RUNOFFDIS,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, infil2d_ID, infil2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, snowmelt_ID, snowmelt2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, absorbedSW_ID,AbsorbedSW2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, absorbedLW_ID, AbsorbedLW2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, InDirect2d_ID, InDirect2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, InDiffuse2d_ID, InDiffuse2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    
+    
+    call check( nf90_put_var(ncid, invalidp_ID, maskgrid))
+    !call check( nf90_put_var(ncid, runoff_ID, RUNOFF2d,start =(/1,1,HOUR/),count = (/NX,NY,1/)))
+    call check( nf90_put_var(ncid, dgl_ID, DGL2d_daily))
+    call check( nf90_put_var(ncid, evap_ID, EVAP12d_daily))
+    call check( nf90_put_var(ncid, etsum_ID,ETSUM2d_daily))
+    call check( nf90_put_var(ncid, THFLUX_ID,THFLUX2d_daily))
+    !call check( nf90_put_var(ncid, SWE_ID,SWE2d_daily))
+    !call check( nf90_put_var(ncid, FDEPTH_ID,FDEPTH2d,start=(/1,1,HOUR/),count = (/NX,NY,1/)))
+    !call check( nf90_put_var(ncid, TDEPTH_ID,TDEPTH2d,start=(/1,1,HOUR/),count = (/NX,NY,1/)))      
+      
+    if(output_snow .eqv. .TRUE.)then
+      call check( nf90_inq_varid(ncid, "ZSP2d", ZSPDT_ID) )
+      call check( nf90_put_var(ncid, ZSPDT_ID, ZSP))
+    endif
+    call check( nf90_close(ncid) )
+ end subroutine
+
+
 
