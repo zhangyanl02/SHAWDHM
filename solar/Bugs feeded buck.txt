@@ -1,0 +1,3 @@
+We have validated the MTSAT retrived solar radiation at seven stations in the upper streams of Heihe river, and a good agreement has been achieved in months from Jan to Sep. However, there are some problems for the retrived data in monthes from Oct to Dec. We have feeded back these bugs to its initial developer, Profersor Tang.  Profersor Tang has promised to correct the data as soon as possible after submitting his proposal of NSF.
+
+Cheers! The performance of this product is promising.
