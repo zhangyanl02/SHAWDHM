@@ -46,6 +46,8 @@
       hydro_module=0
       deflate=1
       maxiter=10
+      hourly_output=0
+      point_simulation=0
 /
 
 &layers
@@ -94,6 +96,26 @@
       snow_ini='../initial/ini_snow.nc'
       veg_ini ='../initial/ini_veg.nc'
       res_ini ='../initial/ini_res.nc'
+/
+
+
+
+&output_flag
+      T_soil_out    = 1
+      VLC_soil_out  = 1
+      VIC_soil_out  = 0
+      T_Residue_out = 0
+      TSP_out       = 0
+      ZSP_out       = 0
+      DGL_out       = 0
+      EVAP_out      = 0
+      ET_out        = 0
+      Runoff_out    = 0
+      surfacerunoff_out  = 0
+      SWE_out       = 0
+      THFLUX_out    = 0
+      infill_out    = 0
+      snowmelt_out  = 0
 /
 
 &levelout

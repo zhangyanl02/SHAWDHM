@@ -29,7 +29,13 @@ module controlpara_mod
     integer(i4)::hydro_module
     integer(i4)::timezone
     integer(i4)::maxiter
+    integer(i4)::hourly_output
+    integer(i4)::point_simulation
+    integer(i4)::ntimes
 
+
+    integer(i4)::T_soil_out,VLC_soil_out,VIC_soil_out,T_Residue_out,TSP_out,ZSP_out,DGL_out,EVAP_out
+    integer(i4)::ET_out,Runoff_out,surfacerunoff_out,SWE_out,THFLUX_out,infill_out,snowmelt_out
 
   !inital: intial time
   !mtstep: meteo data time step 0:hourly,1:daily

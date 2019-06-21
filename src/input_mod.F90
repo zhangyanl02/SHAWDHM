@@ -55,6 +55,8 @@ contains
         use soilproperty_mod,only:b2d,entry2d, satk2d,rhob2d,sat2d,sand2d,silt2d,clay2d,om2d,vapexp2d,vapcof2d,&
           thfc2d,thr2d,alpha2d,n2d,l2d
         use constvar_mod
+        use statevar_mod,only:TSDT2d_day,VLCDT2d_day,VICDT2d_day,TRDT2d_day,TSPDT2d_day,zsp2d_day,EVAP12d_day,ETSUM2d_day,&
+            THFLUX2d_day,NSP2d_day,RUNOFF2d_day,DGL2D_day,RUNOFFDIS_day,infill_day,snowmelt_day
         use netcdf
         implicit none
         character(200),intent(in)::setupfile
@@ -65,7 +67,8 @@ contains
         namelist /timepara/ mtstep,nhrpdt,jstart,hrstar,yrstar,jend,hrend,yrend,hrnoon,timezone
 !       namelist control
         namelist /control/ toler,height,pondmxcm,inph2o,mwatrxt,mpltgro,mzcinp,canma,canmb,wcandt1,zmspcm,&
-          snotmp,ivlcbc,itmpbc,albdry,albexp,zmcm,restart,shadeef,nsalt,nplant,maskflag,maxstep,hydro_module,deflate,maxiter
+          snotmp,ivlcbc,itmpbc,albdry,albexp,zmcm,restart,shadeef,nsalt,nplant,maskflag,maxstep,hydro_module,deflate,maxiter,&
+          hourly_output,point_simulation
           
 !       namelist layers
         namelist /layers/ns,nc,nr,nsp,nsoiltype,soilfromtable,lai_from_table
@@ -82,6 +85,8 @@ contains
         namelist /residue/ rescof,gmcdt1,res_table
 !       namelist initialstate
         namelist /initialstate/ soil_ini,snow_ini,veg_ini,res_ini
+        namelist /output_flag/ T_soil_out,VLC_soil_out,VIC_soil_out,T_Residue_out,TSP_out,ZSP_out,DGL_out,EVAP_out,&
+                            ET_out,Runoff_out,surfacerunoff_out,SWE_out,THFLUX_out,infill_out,snowmelt_out
 
         integer(i4)::controlfile,infil,allocatestatus
         integer(i4)::i,j,k,col,row,flunit,ireturn
@@ -167,6 +172,7 @@ contains
           write (6,*)' **************************************************'
           stop
         end if
+
 
 !       read namelist control
         print*,"reading namelist control"
@@ -376,8 +382,28 @@ contains
         end if
         call read_initial_state(restart)
 
+        read(controlfile,output_flag,err=109,iostat=infil)
+109     if(infil.ne.0) then
+          print *,'error in reading namelist output_flag. program stopped.'
+          stop
+        end if
 
-
+        ntimes=int(24/nhrpdt)
+        allocate(TSDT2d_day(NX,NY,NS,ntimes))
+        allocate(VLCDT2d_day(NX,NY,NS,ntimes))
+        allocate(VICDT2d_day(NX,NY,NS,ntimes))
+        allocate(TRDT2d_day(NX,NY,NRMAX,ntimes))
+        allocate(TSPDT2d_day(NX,NY,ntimes))
+        allocate(zsp2d_day(NX,NY,ntimes))
+        allocate(EVAP12d_day(NX,NY,ntimes))
+        allocate(ETSUM2d_day(NX,NY,ntimes))
+        allocate(THFLUX2d_day(NX,NY,ntimes))
+        allocate(NSP2d_day(NX,NY,ntimes))
+        allocate(RUNOFF2d_day(NX,NY,ntimes))
+        allocate(DGL2D_day(NX,NY,ntimes))
+        allocate(RUNOFFDIS_day(NX,NY,ntimes))
+        allocate(infill_day(NX,NY,ntimes))
+	allocate(snowmelt_day(NX,NY,ntimes))
 
 
 

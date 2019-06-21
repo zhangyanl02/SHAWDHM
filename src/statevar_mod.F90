@@ -69,5 +69,14 @@ module statevar_mod
     real(r8),dimension(NX,NY)::maskgrid
     real(r8),dimension(NX,NY)::runoff_inter,runoff_g,waterflx
     real(r8),dimension(NX,NY)::Dr2d,Drw2d,DGL2D,DS2D,DG2D,BOT2d
+!daily output
+    real(r8),allocatable::TSDT2d_day(:,:,:,:),VLCDT2d_day(:,:,:,:),VICDT2d_day(:,:,:,:)
+    real(r8),allocatable::TRDT2d_day(:,:,:,:)
+    real(r8),allocatable::TSPDT2d_day(:,:,:),zsp2d_day(:,:,:)
+    real(r8),allocatable::EVAP12d_day(:,:,:),ETSUM2d_day(:,:,:),THFLUX2d_day(:,:,:)
+    integer(i4),allocatable::NSP2d_day(:,:,:)
+    real(r8),allocatable::RUNOFF2d_day(:,:,:),DGL2D_day(:,:,:),RUNOFFDIS_day(:,:,:)
+    real(r8),allocatable::infill_day(:,:,:)
+    real(r8),allocatable::snowmelt_day(:,:,:)
 
 end module statevar_mod

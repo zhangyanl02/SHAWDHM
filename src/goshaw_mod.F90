@@ -569,7 +569,7 @@ contains
          end if
          CALL VSLOPE (DUMMY,SATV,TSP(1))
          if(abs(TSPDT(1)) .gt. 70.0)then
-            print*,"GOSHAW LINE 598",col,row,TSPDT(1)
+            print*,"GOSHAW LINE 572",col,row,TSPDT(1)
             stop
          end if
          CALL VSLOPE (DUMMY,SATVDT,TSPDT(1))
@@ -1424,7 +1424,12 @@ contains
       CALL FROST (NSP,NS,JULIAN,&
          HOUR,YEAR,1,ZSP,RHOSP,DZSP,DLWDT,WLAG,STORE,&
          ZS,VLCDT,VICDT,TSDT,ICESDT,col,row)
-!
+         
+         if(NSP .gt. 0 .and. NSP.lt.NSPMAX)then
+           ZSP(NSPMAX)=ZSP(NSP)
+         else
+           ZSP(NSPMAX)=0.0
+         end if
 !        PRINT OUTPUT FOR THIS HOUR
 !         CALL OUTPUT (NPLANT,NC,NSP,NR,NS,LVLOUT,0,INPH2O,
 !     >    JULIAN,HOUR,YEAR,1,ZC,TCDT,VAPCDT,WCANDT,ROOTXT,RHOSP,
