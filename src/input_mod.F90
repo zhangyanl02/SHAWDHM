@@ -68,7 +68,7 @@ contains
 !       namelist control
         namelist /control/ toler,height,pondmxcm,inph2o,mwatrxt,mpltgro,mzcinp,canma,canmb,wcandt1,zmspcm,&
           snotmp,ivlcbc,itmpbc,albdry,albexp,zmcm,restart,shadeef,nsalt,nplant,maskflag,maxstep,hydro_module,deflate,maxiter,&
-          hourly_output,point_simulation
+          daily_output,point_simulation
           
 !       namelist layers
         namelist /layers/ns,nc,nr,nsp,nsoiltype,soilfromtable,lai_from_table

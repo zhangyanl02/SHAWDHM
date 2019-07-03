@@ -1,0 +1,39 @@
+#!/bin/bash
+
+PREFIX	= /usr/bin/
+CFLAGS	= -g
+FC=gfortran
+ifeq ($(FC),gfortran)
+	LIB_NETCDF_INC =/usr/include
+	LIB_NETCDF_LIB =/lib
+	FLAGS          = -ffpe-trap=invalid,zero,overflow -fbacktrace -fopenmp #-fbounds-check
+	NETCDF_FLAG    =-I$(LIB_NETCDF_INC) -L$(LIB_NETCDF_LIB) -lnetcdf -lnetcdff
+endif
+
+SCRSPATH1	= .
+
+
+OBJ		= 	$(SCRSPATH1)/gisutil.mod $(SCRSPATH1)/mod_preprocess.mod			
+OBJ_O		= 	$(SCRSPATH1)/gisutil.o $(SCRSPATH1)/mod_preprocess.o
+			
+
+#      $(FC) -c $(CFLAGS) $(FLAGS) $(NETCDF_FLAG) $<
+%.mod: %.F90 
+	$(FC) -c $(CFLAGS) $(FLAGS) $<
+%.o: %.F90 
+	$(FC) -c $(CFLAGS) $(FLAGS) $<
+
+	
+	
+all: test
+
+#     $(FC) -o ./PreGBHM $(OBJ_O) PreGBHM.F90 $(CFLAGS) $(NETCDF_FLAG) $(FLAGS) 
+test: $(OBJ) 
+	$(FC) -o ./PreGBHM $(OBJ_O) PreGBHM.F90 $(CFLAGS) $(FLAGS) 
+	
+clean:
+	rm -rf *.o *~ $(OBJ)
+	rm ./PreGBHM
+	
+install:
+	cp ./PreGBHM $(PREFIX)

@@ -46,7 +46,7 @@
       hydro_module=0
       deflate=1
       maxiter=10
-      hourly_output=0
+      daily_output=0
       point_simulation=0
 /
 

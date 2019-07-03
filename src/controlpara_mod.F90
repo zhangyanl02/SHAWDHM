@@ -29,7 +29,7 @@ module controlpara_mod
     integer(i4)::hydro_module
     integer(i4)::timezone
     integer(i4)::maxiter
-    integer(i4)::hourly_output
+    integer(i4)::daily_output
     integer(i4)::point_simulation
     integer(i4)::ntimes
 
