@@ -68,7 +68,7 @@ contains
 !       namelist control
         namelist /control/ toler,height,pondmxcm,inph2o,mwatrxt,mpltgro,mzcinp,canma,canmb,wcandt1,zmspcm,&
           snotmp,ivlcbc,itmpbc,albdry,albexp,zmcm,restart,shadeef,nsalt,nplant,maskflag,maxstep,hydro_module,deflate,maxiter,&
-          daily_output,point_simulation
+          daily_output,point_simulation,GroundTempGradients
           
 !       namelist layers
         namelist /layers/ns,nc,nr,nsp,nsoiltype,soilfromtable,lai_from_table
@@ -289,7 +289,7 @@ contains
            do c=1,nx
              if (landuse2d(c,r).eq.0) then
                inbasin2d(c,r)=-9999
-               landuse2d(c,r)=10
+               !landuse2d(c,r)=10
              end if
            end do
         end do
@@ -792,17 +792,19 @@ subroutine dayinp2 (julian,year,lastyear,mtstep,mpltgro,mwatrxt,sunhor,tmpday,wi
   200 if (nplant .eq. 0 .or. mpltgro .eq. 0) go to 250
       do 215 j=1,nplant
          do col=1,nx
-         do row=1,ny
-          plthgt(col,row,j) = planth(landuse(col,row),julian)
-          dchar (col,row,j) = dchar (col,row,j)
-          pltwgt(col,row,j) = plantw(landuse(col,row),julian)
-          if(lai_from_table .eq. 1) then
-            pltlai(col,row,j) = lai_t(landuse(col,row),julian)
-          else
-            pltlai(col,row,j) = lai(col,row,julian)
-          endif
-          rootdp(col,row,j) = rtdp(landuse(col,row),julian)
-         end do
+           do row=1,ny
+             if(landuse(col,row).ne.0)then
+               plthgt(col,row,j) = planth(landuse(col,row),julian)
+               dchar (col,row,j) = dchar (col,row,j)
+               pltwgt(col,row,j) = plantw(landuse(col,row),julian)
+               if(lai_from_table .eq. 1) then
+                 pltlai(col,row,j) = lai_t(landuse(col,row),julian)
+               else
+                 pltlai(col,row,j) = lai(col,row,julian)
+               endif
+               rootdp(col,row,j) = rtdp(landuse(col,row),julian)
+             end if
+           end do
          end do
   215 continue
   250 ifirst=1
@@ -1194,27 +1196,32 @@ end subroutine cloudy2
           nplant2d=nplant
           call canhum (2,hum,dummy,wcmax,0.0_r8,canma,canmb)
           do row = 1,ny
-            do col = 1, nx          
-              if (wcandt2d(col,row,1) .gt. wcmax) then
-                wcandt2d(col,row,1)=wcmax
+            do col = 1, nx    
+              if(landuse2d(col,row).ne.0)then    
+                if(landuse2d(col,row)==-9999) print*,col,row 
+                if (wcandt2d(col,row,1) .gt. wcmax) then
+                  wcandt2d(col,row,1)=wcmax
+                end if
+                do k=1,nplant
+                  dchar2d (col,row,k)=vegtable(landuse2d(col,row),1)
+                  dchar2d (col,row,k)=dchar2d (col,row,k)/100.0
+                  canalb2d(col,row,k)=vegtable(landuse2d(col,row),2)
+                  tccrit2d(col,row,k)=vegtable(landuse2d(col,row),3)
+                  pleaf02d(col,row,k)=vegtable(landuse2d(col,row),4)
+                  rstom02d(col,row,k)=vegtable(landuse2d(col,row),5)
+                  rstexp2d(col,row,k)=vegtable(landuse2d(col,row),6)
+                  rleaf02d(col,row,k)=vegtable(landuse2d(col,row),7)
+                  rroot02d(col,row,k)=vegtable(landuse2d(col,row),8)
+                  rleaf02d(col,row,k)=1.0/rleaf02d(col,row,k)
+                  rroot02d(col,row,k)=1.0/rroot02d(col,row,k)
+                  xangle2d(col,row,k)=vegtable(landuse2d(col,row),9)
+                  clumpng2d(col,row,k)=vegtable(landuse2d(col,row),10)
+                  itype2d (col,row,k)=1
+                end do
+                if(landuse2d(col,row).eq.16) nplant2d(col,row)=0
+                if(landuse2d(col,row).eq.15) nplant2d(col,row)=0
+                if(landuse2d(col,row).eq.14) nplant2d(col,row)=0
               end if
-              do k=1,nplant
-                dchar2d (col,row,k)=vegtable(landuse2d(col,row),1)
-                dchar2d (col,row,k)=dchar2d (col,row,k)/100.0
-                canalb2d(col,row,k)=vegtable(landuse2d(col,row),2)
-                tccrit2d(col,row,k)=vegtable(landuse2d(col,row),3)
-                pleaf02d(col,row,k)=vegtable(landuse2d(col,row),4)
-                rstom02d(col,row,k)=vegtable(landuse2d(col,row),5)
-                rstexp2d(col,row,k)=vegtable(landuse2d(col,row),6)
-                rleaf02d(col,row,k)=vegtable(landuse2d(col,row),7)
-                rroot02d(col,row,k)=vegtable(landuse2d(col,row),8)
-                rleaf02d(col,row,k)=1.0/rleaf02d(col,row,k)
-                rroot02d(col,row,k)=1.0/rroot02d(col,row,k)
-                xangle2d(col,row,k)=vegtable(landuse2d(col,row),9)
-                clumpng2d(col,row,k)=vegtable(landuse2d(col,row),10)
-                itype2d (col,row,k)=1
-              end do
-              if(landuse2d(col,row).eq.16) nplant2d(col,row)=0
             end do
           end do
         endif
@@ -1246,14 +1253,16 @@ end subroutine cloudy2
         do col=1,nx
           do row=1,ny
 !           determine maximum water content of residue (at 99.9% rh)
-            if (gmcdt2d(col,row,1) .gt. gmcmax) gmcdt2d(col,row,1)=gmcmax
-            cover2d(col,row)=restable(landuse2d(col,row),1)
-            albres2d(col,row)=restable(landuse2d(col,row),2)
-            rload2d(col,row)=restable(landuse2d(col,row),3)
-            rload2d(col,row)=rload2d(col,row)/10000.
-            zrthik2d(col,row)=restable(landuse2d(col,row),4)
-            zrthik2d(col,row)=zrthik2d(col,row)/100.
-            rescof2d(col,row)=rescof
+            if(landuse2d(col,row).ne.0)then
+              if (gmcdt2d(col,row,1) .gt. gmcmax) gmcdt2d(col,row,1)=gmcmax
+              cover2d(col,row)=restable(landuse2d(col,row),1)
+              albres2d(col,row)=restable(landuse2d(col,row),2)
+              rload2d(col,row)=restable(landuse2d(col,row),3)
+              rload2d(col,row)=rload2d(col,row)/10000.
+              zrthik2d(col,row)=restable(landuse2d(col,row),4)
+              zrthik2d(col,row)=zrthik2d(col,row)/100.
+              rescof2d(col,row)=rescof
+            end if
           end do
         end do
       end subroutine ReadResiduePara
@@ -1287,6 +1296,7 @@ end subroutine cloudy2
           if (allocatestatus /= 0) stop "*** not enough memory for vlcdt(nx,ny,ns)***"
 
           call strlen(soil_ini,l1,l2)
+          print*,trim(soil_ini(l1:l2))
           call check( nf90_open(trim(soil_ini(l1:l2)), nf90_nowrite, ncid) )
           call check( nf90_inq_varid(ncid, "TSDT2d", tsdt_id) )
           call check( nf90_inq_varid(ncid, "VLCDT2d",  vlcdt_id) )
@@ -1341,12 +1351,6 @@ end subroutine cloudy2
               end if
             end do
           end do
-          !tsdt2d(35,34,:)=tsdt2d(35,34,:)+4.0  !!AR
-          !tsdt2d(31,41,:)=tsdt2d(31,41,:)+4.0  !!ARNF
-          !tsdt2d(40,29,:)=tsdt2d(40,29,:)+4.0  !!ARSF
-          !tsdt2d(74,44,:)=tsdt2d(74,44,:)+4.0  !!EB
-          !tsdt2d(58,38,:)=tsdt2d(58,38,:)+3.0  !!HCG
-          !tsdt2d(91,55,:)=tsdt2d(91,55,:)+4.0  !!JYL
           matdt2d(:,:,1:ns)=matdt
           icesdt2d(:,:,1:ns)=icedt
           !do col=1,nx
@@ -1370,8 +1374,8 @@ end subroutine cloudy2
           !end do
         else
           print*,"Setting default initial states for the variable"
-          tsdt2d(:,:,1:ns)=0.0
-          vlcdt2d(:,:,1:ns)=0.2
+          tsdt2d(:,:,1:ns)=1.0
+          vlcdt2d(:,:,1:ns)=0.3
           vicdt2d(:,:,1:ns)=0.0
           icesdt2d(:,:,:)=0
           do col=1,nx

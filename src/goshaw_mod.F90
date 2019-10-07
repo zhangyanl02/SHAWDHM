@@ -20,7 +20,7 @@ contains
     thflux,vflux,runoff,tsavg,evap1,etsum,totflo,lwcan,swcan,lwsnow,lwsoil,lwres,swres,swsnow,swsoil,wwdt,maskflag,&
     maskgrid,bot,dgl,infiltration,AbsorbedSW,AbsorbedLW,snowmelt,InDirect,InDiffuse)
     use controlpara_mod,only:DT2d,LVLOUT,CANMA,CANMB,HEIGHT,WT2d,WDT2d,DTIME,INITAL,NHRPDT,SNOTMP,WCMAX,TOLER,MAXSTEP,shadeef,&
-        maxiter
+        maxiter,GroundTempGradients
     use constvar_mod,only:G,UGAS,LF,RHOL,RHOI
     use soilproperty_mod,only:B2d,SAT2d,RHOB2d,ENTRY2d,SAND2d,SILT2d,CLAY2d,OM2d,SATK2d,SALTKQ2d,thfc2d
     use matrix_mod
@@ -420,7 +420,7 @@ contains
 !cc      AA=AA*NHRPDT/24
 !cc      TSDT(NS)=(1.-AA)*TSDT(NS) + AA*TSDT(NS-1)
         ELSEif(ITMPBC .eq. 1) then   !non heat flux boundary
-          TSDT(NS)=TSDT(NS-1)
+          TSDT(NS)=TSDT(NS-1)+(ZS(NS)-ZS(NS-1))*GroundTempGradients
         ELSE
 !        LOWER TEMPERATURE BOUNDARY SPECIFIED FROM INPUT FILE
          TSDT(NS)=SOITMP
@@ -1426,7 +1426,7 @@ contains
          ZS,VLCDT,VICDT,TSDT,ICESDT,col,row)
          
          if(NSP .gt. 0 .and. NSP.lt.NSPMAX)then
-           ZSP(NSPMAX)=ZSP(NSP)
+           ZSP(NSPMAX)=ZSP(NSP+1)
          else
            ZSP(NSPMAX)=0.0
          end if

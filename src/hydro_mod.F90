@@ -612,7 +612,7 @@ module hydro_mod
 !     kgs:      hydraulic conductivity (m/sec)
 !     conlen:   contact length between the river and aquifer (m)
 !     grad:     gradient of water head
-!     Q:        discharge exchanged between aquifer and river (m^3/sec)
+!     Q:        discharge exchanged between aquifer and river (m^3/sec/m)
       use shr_kind_mod, only:r8 => shr_kind_r8,i4 => shr_kind_i4,i8 => shr_kind_i8,r4=> shr_kind_r4
       implicit none
       real(r8),intent(in)::Dtg,length,slope,Ds,Dg,Dr,kgs
@@ -645,7 +645,145 @@ module hydro_mod
 
 
 
+    subroutine runoff_generation(nx,ny,runoffdis,runoffdepth,dtime,ncount,averunoffdepth)
+        use shr_kind_mod, only: r8 => shr_kind_r8,i4 => shr_kind_i4,i8 => shr_kind_i8,r4 => shr_kind_r4
+        use statevar_mod,only:inbasin2d,runoff_g,ns2d,hkdt2d,matdt2d,vlcdt2d,vicdt2d,dgl2d,slopelen2d,slope2d,ds2d,&
+                              dg2d,dr2d,drw2d,runoff_inter,zs2d,tsdt2d,runoff12d,runoff2d
+        use soilproperty_mod,only:thfc2d
+        !use hydro_mod,only:nsub,lateral_inflow,river_routing,read_hydro_para,lateral_routing,gwriv
+        use shaw27_mod,only:soilhk
+        implicit none
+        integer(i4)::nx,ny,ncount
+        real(r8)::averunoffdepth
+        real(r8)::runoffdis(nx,ny),runoffdepth(nx,ny)
+        real(r8)::dtime
 
+        integer(i4)::col,row,i
+        real(r8)::tmpqsub,avkg,tempcoe,deltzi,fieldc,tmp
+
+        
+        runoffdis(:,:)=0.0
+        ncount=0!!added 
+        averunoffdepth=0
+        !$omp parallel private(col,row,tmpqsub,avkg,tmp,deltzi) default(shared)
+        !$omp do
+        do col=1,nx
+          do row = 1, ny
+            if(inbasin2d(col,row).eq. 1)then
+              runoffdepth(col,row)=0.0!added
+!             calculate groundwater rounoff
+              runoff_g(col,row)=0.0
+              tmpqsub = 0.0
+              ncount=ncount+1
+              call soilhk (ns2d(col,row),hkdt2d(col,row,:),matdt2d(col,row,:),vlcdt2d(col,row,:),vicdt2d(col,row,:),col,row)
+              avkg = 1.3*hkdt2d(col,row,6)
+!             avkg = 0.1*satk(col,row,ns)
+              if (dgl2d(col,row).lt.0.0) dgl2d(col,row)=0.0
+              call gwriv(dgl2d(col,row),slopelen2d(col,row),tan(slope2d(col,row)),ds2d(col,row),dg2d(col,row), &
+              dr2d(col,row),drw2d(col,row),avkg,tmpqsub) ! m3/s/m
+              runoff_g(col,row) = tmpqsub * dtime / slopelen2d(col,row)                                   ! m
+              !if(abs(runoff_g(col,row)) .lt. 0.1e-20) runoff_g(col,row) = 0.0
+
+              !if(runoff_g(col,row) .lt. 0.0) then      ! river infiltrates into aquifer
+              !  if(dgl2d(col,row) .gt. ds2d(col,row)) then
+              !    dgl2d(col,row)= dgl2d(col,row)+runoff_g(col,row)/0.3
+              !  else 
+              !    vlcdt2d(col,row,ns2d(col,row))=vlcdt2d(col,row,ns2d(col,row))-runoff_g(col,row)/(zs2d(col,row,ns2d(col,row))&
+              !-zs2d(col,row,ns2d(col,row)-1))/2.0
+              !    dgl2d(col,row)=ds2d(col,row)
+              !  end if
+              !else
+              !  dgl2d(col,row)= dgl2d(col,row)+runoff_g(col,row)/0.3
+              !end if
+              if(dgl2d(col,row).gt.(ds2d(col,row)+dg2d(col,row)))then
+                if(runoff_g(col,row).gt. 0.0)then
+                   runoff_g(col,row)=runoff_g(col,row)+(ds2d(col,row)+dg2d(col,row)-dgl2d(col,row))*0.3
+                end if
+                dgl2d(col,row) = ds2d(col,row)+dg2d(col,row)
+              end if
+              runoff_g(col,row) =runoff_g(col,row)+0.001939/6068* dtime / slopelen2d(col,row)
+                  dgl2d(col,row)=dgl2d(col,row)+4.0*3600/2336/1000000.0/0.3
+!             caculate subsurface rounoff
+              runoff_inter(col,row)=0.0
+              tmpqsub= 0.0
+              tempcoe= 7.0
+
+              call soilhk (ns2d(col,row),hkdt2d(col,row,:),matdt2d(col,row,:),vlcdt2d(col,row,:),vicdt2d(col,row,:),col,row)
+              deltzi=(zs2d(col,row,2)-zs2d(col,row,1))/2.0
+              if (tsdt2d(col,row,1)<0.0) then
+                  fieldc=thfc2d(col,row,1)*vlcdt2d(col,row,1)/(vlcdt2d(col,row,1)+vicdt2d(col,row,1))
+              else
+                  fieldc=thfc2d(col,row,1)
+              end if
+              if((vlcdt2d(col,row,1)-fieldc) .gt. 0.0) then
+                if(tsdt2d(col,row,1)<0.0) then
+                  tempcoe=7.0
+                else
+                  tempcoe=7.0
+                end if
+                tmpqsub = tempcoe*hkdt2d(col,row,1)*sin(slope2d(col,row))*dtime*deltzi
+                if(tmpqsub .lt. 0.1e-20) tmpqsub = 0.0
+                tmp= (vlcdt2d(col,row,1)-fieldc)*deltzi*slopelen2d(col,row)
+                tmpqsub = amin1(tmpqsub, tmp)
+                tmpqsub = amax1(tmpqsub, 0.0)
+                vlcdt2d(col,row,1)= vlcdt2d(col,row,1)-tmpqsub/deltzi/slopelen2d(col,row)
+                runoff_inter(col,row) = runoff_inter(col,row) + tmpqsub
+                runoffdepth(col,row)=runoffdepth(col,row)+tmpqsub*zs2d(col,row,1)
+              end if
+
+              do i = 2, ns2d(col,row)-1
+                tmpqsub=0.0
+                deltzi=(zs2d(col,row,i+1)-zs2d(col,row,i-1))/2.0
+                if (tsdt2d(col,row,i)<0.0) then
+                  fieldc=thfc2d(col,row,i)*vlcdt2d(col,row,1)/(vlcdt2d(col,row,1)+vicdt2d(col,row,1))
+                  tempcoe=7.0
+                else
+                  fieldc=thfc2d(col,row,i)
+                  tempcoe=7.0
+                end if
+                if((vlcdt2d(col,row,i)-fieldc) .gt. 0.0) then
+                  call soilhk (ns2d(col,row),hkdt2d(col,row,:),matdt2d(col,row,:),vlcdt2d(col,row,:),vicdt2d(col,row,:),col,row)
+                  tmpqsub = tempcoe*hkdt2d(col,row,i)*sin(slope2d(col,row))*dtime*deltzi
+                  if(tmpqsub .lt. 0.1e-20) tmpqsub = 0.0
+                  tmp     = (vlcdt2d(col,row,i)-fieldc)*deltzi*slopelen2d(col,row)
+                  tmpqsub = amin1(tmpqsub, tmp)
+                  tmpqsub = amax1(tmpqsub, 0.0)
+                  vlcdt2d(col,row,i)= vlcdt2d(col,row,i)-tmpqsub/deltzi/ slopelen2d(col,row)
+                  runoff_inter(col,row) = runoff_inter(col,row) + tmpqsub
+                end if
+                runoffdepth(col,row)=runoffdepth(col,row)+zs2d(col,row,i)*tmpqsub
+              enddo
+!              runoff_inter(col,row) = runoff_inter(col,row) + hkdt2d(col,row,ns2d(col,row))*dtime/&
+!              (gridarea2d(col,row)/slopelen2d(col,row))
+              deltzi=(zs2d(col,row,ns2d(col,row))-zs2d(col,row,ns2d(col,row)-1))/2.0
+              !runoff_inter(col,row) = runoff_inter(col,row) + bot2d(col,row)*deltzi*slopelen2d(col,row)
+
+
+              if((vlcdt2d(col,row,ns2d(col,row))-thfc2d(col,row,ns2d(col,row))) .gt. 0.0) then
+                tmpqsub = tempcoe*hkdt2d(col,row,ns2d(col,row))*sin(slope2d(col,row))*dtime*deltzi
+                if(tmpqsub .lt. 0.1e-20) tmpqsub = 0.0
+                tmp= (vlcdt2d(col,row,ns2d(col,row))-thfc2d(col,row,ns2d(col,row)))*deltzi*slopelen2d(col,row)
+                tmpqsub = amin1(tmpqsub, tmp)
+                tmpqsub = amax1(tmpqsub, 0.0)
+                vlcdt2d(col,row,ns2d(col,row))= vlcdt2d(col,row,ns2d(col,row))-tmpqsub/deltzi/slopelen2d(col,row)
+                runoff_inter(col,row) = runoff_inter(col,row) + tmpqsub
+                runoffdepth(col,row)=runoffdepth(col,row)+tmpqsub*zs2d(col,row,ns2d(col,row))
+              end if
+              !runoffdepth(col,row)=runoffdepth(col,row)/runoff_inter(col,row)
+              !averunoffdepth=averunoffdepth+runoffdepth(col,row)
+              runoffdis(col,row)=runoff2d(col,row)*1000.0+runoff_g(col,row)*1000.0+runoff_inter(col,row)/slopelen2d(col,row)*1000.0
+            
+              runoff_inter(col,row)=runoff_inter(col,row)/dtime
+              runoff_g(col,row)=runoff_g(col,row)*slopelen2d(col,row)/dtime
+!             roffg     =  roffg * length/dtlsm            ! m --> m3/sec/m
+!             roffinter =  roffinter * length/dtlsm      ! m --> m3/sec/m
+              runoff12d(col,row)=runoff12d(col,row)+runoff2d(col,row)
+            end if
+          end do
+        end do
+        !$omp end do
+        !$omp end parallel
+   end subroutine
 
 
 end module hydro_mod

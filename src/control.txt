@@ -1,27 +1,27 @@
 &directories
-      hydro_para_dir = '/disk2/SHAWDHM_models/BBH/model_input/hydropara/'
-      output_dir     = '/disk2/SHAWDHM_model/dongbei/hulunbe/output/'
-      forcing_dir    = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/forcing/'
-      lai_dir        = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/lai/'
+      hydro_para_dir = '/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/'
+      output_dir     = './output/'
+      forcing_dir    = '/disk2/SHAWDHM_model/SRYR/input/forcingYK/'
+      lai_dir        = '/disk2/SHAWDHM_model/SRYR/input/lai/'
       shadows_dir    = '/disk2/SHAWDHM_models/BBH/model_input/shadows/M2/'
 /
 
 &timepara
       mtstep = 0
-      nhrpdt = 1
+      nhrpdt = 3
       jstart = 1
-      hrstar = 1
+      hrstar = 3
       yrstar = 1979
       jend   = 365
       hrend  = 24
-      yrend  = 2015
+      yrend  = 1991
       hrnoon = 12.50
       timezone=0
 /
 
 &control
       toler   =0.1
-      height  =5.0
+      height  =2.0
       pondmxcm=0.2
       inph2o =0
       mwatrxt=0
@@ -37,7 +37,7 @@
       albdry =0.3
       albexp =0.0
       zmcm   =0.9
-      restart=0
+      restart=1
       shadeef=0
       nsalt  =0
       nplant =1
@@ -46,12 +46,13 @@
       hydro_module=0
       deflate=1
       maxiter=10
-      daily_output=0
+      daily_output=1
       point_simulation=0
+      GroundTempGradients=0.05
 /
 
 &layers
-      ns=15
+      ns=14
       nc=0
       nr=1
       nsp=0
@@ -61,38 +62,38 @@
 /
 
 &mapfile
-      watershed_map    = "/disk2/SHAWDHM_model/dongbei/hulunbe/input/mask.asc"
-      gridarea_map     = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/cell_area.asc'
-      elevation_map    = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/elevation.asc'
-      aspect_map       = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/aspect.asc'
-      slopelength_map  = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/slope_length.asc'
-      slopeangle_map   = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/slope.asc'
-      landuse_map      = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/landuse.asc'
-      lat_map          = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/lat.asc'
-      lon_map          = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/lon.asc'
-      soilpro_nc       = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/soilpara.nc'
-      soiltype_map     = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/soiltype.asc'
-      soilpara_table   = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/soilpara_tab.txt'
-      tsavg_map        = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/tsavg5.asc'
-      skyview_map      = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/skyview_M2.asc'
+      watershed_map    = "/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/ws.asc"
+      gridarea_map     = '/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/cell_area.asc'
+      elevation_map    = '/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/elevation.asc'
+      aspect_map       = '/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/aspect.asc'
+      slopelength_map  = '/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/slope_length.asc'
+      slopeangle_map   = '/disk2/SHAWDHM_model/SRYR/PreGBHM/model_para/hydropara/slope.asc'
+      landuse_map      = '/disk2/SHAWDHM_model/SRYR/input/landuse.asc'
+      lat_map          = '/disk2/SHAWDHM_model/SRYR/input/lat.asc'
+      lon_map          = '/disk2/SHAWDHM_model/SRYR/input/lon.asc'
+      soilpro_nc       = '/disk2/SHAWDHM_model/SRYR/input/soilpara.nc'
+      soiltype_map     = '/disk2/SHAWDHM_model/SRYR/input/soiltype.asc'
+      soilpara_table   = '/disk2/SHAWDHM_model/SRYR/input/soilpara_tab.txt'
+      tsavg_map        = '/disk2/SHAWDHM_model/SRYR/input/tsavg5.asc'
+      skyview_map      = '//disk2/SHAWDHM_model/SRYR/input/skyview_M2.asc'
 /
 
 &vegparameter 
-      vegpara_table = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/vegpara/vegpara.txt'
-      lai_table     = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/vegpara/veglai.txt'
-      hight_table   = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/vegpara/vegheight.txt'
-      rootdp_table  = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/vegpara/rootdp.txt'
-      weight_table  = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/vegpara/vegweight.txt'
+      vegpara_table = '/disk2/SHAWDHM_model/SRYR/input/vegpara/vegpara.txt'
+      lai_table     = '/disk2/SHAWDHM_model/SRYR/input/vegpara/veglai.txt'
+      hight_table   = '/disk2/SHAWDHM_model/SRYR/input/vegpara/vegheight.txt'
+      rootdp_table  = '/disk2/SHAWDHM_model/SRYR/input/vegpara/rootdp.txt'
+      weight_table  = '/disk2/SHAWDHM_model/SRYR/input/vegpara/vegweight.txt'
 /
 
 &residue
       rescof=1000.0
       gmcdt1=0.0
-      res_table     = '/disk2/SHAWDHM_model/dongbei/hulunbe/input/vegpara/residue.txt'
+      res_table     = '/disk2/SHAWDHM_model/SRYR/input/vegpara/residue.txt'
 /
 
 &initialstate
-      soil_ini='/disk2/SHAWDHM_model/dongbei/hulunbe/input/2014-228-03-1.nc'
+      soil_ini='/disk2/SHAWDHM_model/SRYR/SHAWDHM/output/1991-365.nc'
       snow_ini='../initial/ini_snow.nc'
       veg_ini ='../initial/ini_veg.nc'
       res_ini ='../initial/ini_res.nc'
@@ -103,15 +104,15 @@
 &output_flag
       T_soil_out    = 1
       VLC_soil_out  = 1
-      VIC_soil_out  = 0
+      VIC_soil_out  = 1
       T_Residue_out = 0
       TSP_out       = 0
-      ZSP_out       = 0
-      DGL_out       = 0
-      EVAP_out      = 0
+      ZSP_out       = 1
+      DGL_out       = 1
+      EVAP_out      = 1
       ET_out        = 0
-      Runoff_out    = 0
-      surfacerunoff_out  = 0
+      Runoff_out    = 1
+      surfacerunoff_out  = 1
       SWE_out       = 0
       THFLUX_out    = 0
       infill_out    = 0

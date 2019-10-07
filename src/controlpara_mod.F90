@@ -32,6 +32,7 @@ module controlpara_mod
     integer(i4)::daily_output
     integer(i4)::point_simulation
     integer(i4)::ntimes
+    real(r8)::GroundTempGradients
 
 
     integer(i4)::T_soil_out,VLC_soil_out,VIC_soil_out,T_Residue_out,TSP_out,ZSP_out,DGL_out,EVAP_out
